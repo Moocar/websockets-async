@@ -1,0 +1,46 @@
+* Web server with component, core.async, cljs, om, and websockets
+
+** Background
+For an upcoming work hackathon, I thought I'd do some research into the latest web app technologies in the clojure world. Specifically, I was interested in pushing events from the server to the client. I was also interested in ways to organize code within a project. I found a great set of libraries that when used together, give me exactly that. In this post, I'll walk through the different components of the system one by one. If you want to see the final result, feel free to checkout the code here: <INSERT LINK TO GITHUB>
+
+** Implementation
+
+*** Technologies
+- [[https://github.com/clojure/core.async][core.async]] for server side handling of sockets and broadcasts
+- [[https://github.com/lynaghk/jetty7-websockets-async][jetty7-websockets-async]] for implementation of a websockets server
+- [[https://github.com/stuartsierra/component][component]] for code organisation
+- [[https://github.com/swannodette/om][om]] for the ui
+
+Big shout out to Keming Labs for their [[https://github.com/lynaghk/jetty7-websockets-async][jetty7-websockets-async]] project. Also worth mentioning is Stuart Sierra's [[https://github.com/stuartsierra/component#reloading][reloaded]] workflow which made building this a lot of fun.
+
+*** Creating the project
+
+The usual story for creating the project:
+
+#+BEGIN_SRC
+lein new websockets-async
+#+END_SRC
+
+The project.clj for the project is as follows:
+
+#+BEGIN_SRC clojure
+(defproject websockets-async "0.1.0-SNAPSHOT"
+  :dependencies [[org.clojure/clojure "1.5.1"]
+                 [com.stuartsierra/component "0.2.1"]
+                 [ring/ring-jetty-adapter "1.2.1"]
+                 [ring/ring-servlet "1.2.0"]
+                 [org.clojure/core.async "0.1.267.0-0d7780-alpha"]
+                 [org.clojure/clojurescript "0.0-2138"]
+                 [om "0.1.7"]
+                 [compojure "1.1.5" :exclusions [ring/ring-core]]
+                 [com.keminglabs/jetty7-websockets-async "0.1.0"]]
+  :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.2.4"]]
+                   :source-paths ["dev"]
+                   :plugins [[lein-cljsbuild "0.3.2"]]}}
+  :cljsbuild {:builds
+              [{:source-paths ["src-cljs"]
+                :compiler {:output-to "public/main.js"
+                           :output-dir "public"
+                           :optimizations :none
+                           :source-map true}}]})
+#+END_SRC
